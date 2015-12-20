@@ -1,19 +1,27 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 
-```{r message=FALSE}
+
+```r
 library(dplyr)
+```
+
+```
+## Warning: package 'dplyr' was built under R version 3.2.3
+```
+
+```r
 library(ggplot2)
 ```
+
+```
+## Warning: package 'ggplot2' was built under R version 3.2.3
+```
 Load data from activity.zip  
-```{r}
+
+```r
 filename <- "activity"
 if(!file.exists(paste0(filename,".csv"))) {
     unzip(paste0(filename,".zip"))
@@ -30,22 +38,25 @@ actNotNul <- filter(act, !is.na(steps))
 ## What is mean total number of steps taken per day?
 
 Histogram of the total number of steps taken each day
-```{r}
+
+```r
 result <-
   actNotNul %>%
   group_by(date) %>%
   summarize(steps = sum(steps)) 
 ggplot(data=result, aes(x=date, y=steps)) + geom_bar(stat="identity")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
   
 Mean and median
-```{r}
+
+```r
 meanV <- as.character(round(mean(result$steps),digits=1))  
 medianV  <- median(result$steps)
-
 ```
-The mean of total number of steps taken per day is `r meanV`  
-The median of total number of steps taken per day is `r medianV`
+The mean of total number of steps taken per day is 10766.2  
+The median of total number of steps taken per day is 10765
 
 
 
@@ -54,25 +65,33 @@ The median of total number of steps taken per day is `r medianV`
 ## What is the average daily activity pattern?
 
 Perfom mean of steps by interval and plot
-```{r}
+
+```r
 result <-
   actNotNul %>%
   group_by(interval) %>%
   summarize(steps = mean(steps)) 
   qplot(interval, steps, data = result, geom = "line")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+
+```r
   maxV <- max(result$steps)
   intervalMax <- result[which.max(result$steps),]$interval
 ```
-The 5-minute interval `r intervalMax` contains the maximum number of steps, `r maxV` steps
+The 5-minute interval 835 contains the maximum number of steps, 206.1698113 steps
 
 ## Imputing missing values
-```{r}
+
+```r
 missingV <- sum(is.na(act$steps))
 ```
-The total number of missing values in the dataset is `r missingV`
+The total number of missing values in the dataset is 2304
 
 Replacing the missig values with the mean of the corresponding 5-minute interval
-```{r}
+
+```r
 actNaEqualsMean <- act
   
   for (i in 1:nrow(actNaEqualsMean)) {
@@ -89,39 +108,45 @@ actNaEqualsMean <- act
 ```
 
 Histogram of the total number of steps taken each day
-```{r}
+
+```r
 result <-
   actNaEqualsMean %>%
   group_by(date) %>%
   summarize(steps = sum(steps)) 
 ggplot(data=result, aes(x=date, y=steps)) + geom_bar(stat="identity")  
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
   Mean and median
-```{r}
+
+```r
 meanV <- as.character(round(mean(result$steps),digits=1))  
 medianV  <- median(result$steps)
-
 ```
-The mean of total number of steps taken per day is `r meanV`  
-The median of total number of steps taken per day is `r medianV`
+The mean of total number of steps taken per day is 10766.2  
+The median of total number of steps taken per day is 1.0766189\times 10^{4}
 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 Creation of a new factor variable in the dataset with two levels - "weekday" and "weekend" 
-```{r}
+
+```r
 actNaEqualsMean <- mutate(actNaEqualsMean, day = as.POSIXlt(date)$wday , we = ifelse(day %in% c(0,6),"weekend","weekday"))
 ```
 
 Perform and plot the average number of steps taken, averaged across all weekday days or weekend days
-```{r}
+
+```r
 result <-
   actNaEqualsMean %>%
   group_by(interval,we) %>%
   summarize(steps = mean(steps)) 
 
 qplot(interval, steps, data = result, geom = "line", facets = we~.)
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
 
